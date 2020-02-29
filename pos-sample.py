@@ -77,7 +77,7 @@ def findTable(match,attr_list):
     return '',{}
             
 def condition_args(attr_list,map_schema):
-    s1=' '
+    s1=''
     for i in attr_list:
         flag=False
         vflag=False
@@ -155,7 +155,7 @@ if(p!=-1):
     # print(tname)
     # print(map_schema)
     sql="SELECT * FROM "+tname+" WHERE"
-    sql+=condition_args(attr_list,map_schema)
+    sql+=condition_args(attr_list,map_schema)+" ;"
     print(sql)
 # nouns_list=[i[0] for i in pos if i[1].startswith("N")]
 # adverbs_list=[i[0] for i in pos if i[1].startswith("R")]
