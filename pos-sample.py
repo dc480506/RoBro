@@ -4,6 +4,8 @@ import json
 from nltk.stem import WordNetLemmatizer 
 with open('table_attributes.json') as f:
     table_attributes = json.load(f)
+with open('mapping.json') as f:
+    mapping = json.load(f)
 # print(table_attributes) 
 with open('tables_pk.json') as f:
     tables_pk = json.load(f)
@@ -55,6 +57,7 @@ def findTable(match,attr_list):
     best_match_list.sort(key = lambda x: x[1])
     # print(best_match_list)
     p=""
+    map_schema={}
     # print(attr_list)
     for i in best_match_list:
         count=0
@@ -63,15 +66,69 @@ def findTable(match,attr_list):
                 if(k.find("/N")!=-1):
                     p=k.split("/")[0]
                     break
+                
             for q in table_attributes[i[0]]:
                 if(q.find(p)!=-1):
-                    
+                    map_schema[p]=q
                     count+=1
                     # print(q+" "+str(count)+" "+str(j)+" "+str(i))
             if(count==len(attr_list)):
-                return i[0]
+                return i[0],map_schema
     return '',{}
             
+def condition_args(attr_list,map_schema):
+    s1=' '
+    for i in attr_list:
+        flag=False
+        vflag=False
+        for k in i:
+            if(k.find("/N")!=-1 and flag==False):
+                flag=True
+                p=k.split("/")[0]
+                s1+=" "+map_schema[p]
+            elif k.find("/CC")!=-1:
+                p=k.split("/")[0]
+                s1+=" "+p.upper()
+            elif(k.find("/V")!=-1):
+                vflag=True
+                p=k.split("/")[0]
+                for k in mapping.keys():
+                    if p.lower() in mapping[k]:
+                        # s1+=" "+k
+                        verb=k
+                        break
+            elif((k.find("/J")!=-1 or k.find("/IN")!=-1)):
+                p=k.split("/")[0]
+                print("verb",verb)
+                for k in mapping.keys():
+                    if p.lower() in mapping[k]:
+                        print("k",k)
+                        if vflag==True:
+                            # s1=s1.replace(verb,k)
+                            s1+=" "+k
+                            print("s1",s1)
+                            vflag=False
+                        else:
+                            s1+=" "+k
+                        break
+                # if vflag==True:
+                #     s1.replace(verb,p.lower())
+                # else:
+                #     s1+=" "+p.lower()
+            elif(k.find("/N")!=-1 and flag==True):
+                p=k.split("/")[0]
+                if vflag==True:
+                    s1+=" "+verb
+                s1+=" '"+p+"'"
+            elif(k.find("/CD")!=-1):
+                p=k.split("/")[0]
+                if vflag==True:
+                    s1+=" "+verb
+                s1+=" "+p
+    return s1
+            
+                
+
 
     
 
@@ -89,13 +146,17 @@ if(p!=-1):
     first_part=pos[0:p]
     second_part=pos[p+1:]
     attr_list=getAttributes(second_part)
-    tname=findTable(first_part[-1][0],attr_list)
+    print(attr_list)
+    tname,map_schema=findTable(first_part[-1][0],attr_list)
     #print(first_part)
     # print("ahdkjd")
     #print(second_part)
-    print(attr_list)
-    print(tname)
-
+    # print(attr_list)
+    # print(tname)
+    # print(map_schema)
+    sql="SELECT * FROM "+tname+" WHERE"
+    sql+=condition_args(attr_list,map_schema)
+    print(sql)
 # nouns_list=[i[0] for i in pos if i[1].startswith("N")]
 # adverbs_list=[i[0] for i in pos if i[1].startswith("R")]
 # preposition_list=[i[0] for i in pos if i[1].startswith("IN")]
