@@ -24,7 +24,9 @@ def get_sql(request):
     # print(tables)
     tables_relation= pickle.load( open( "static/tables_relation.p", "rb" ) )
     # print(tables_relation)
-
+    map_schema={}
+    agg=''
+    
     result=""
     # def mysqlconnect(sql): 
     #     try: 
@@ -184,28 +186,43 @@ def get_sql(request):
         # print(attr_list)
         # print(tname)
         # print(map_schema)
+        
+    if sample_text.find("What is")!=-1 or sample_text.find("What are")!=-1 or sample_text.find("How many")!=-1:
+        for i in range(len(pos)):
+            if pos[i][0] == 'of':
+                attr=pos[i-1][0]
+                tname=pos[i+1][0]
+                for j in range(0,i):
+                    for k in mapping.keys():
+                        if pos[j][0].lower() in mapping[k]:
+                            agg=k
+                            if agg=="count":
+                                attr='*'
+    if agg=="":
         sql="SELECT * FROM "+tname+" WHERE"
-        sql+=condition_args(attr_list,map_schema)+" ;"
-        print(sql)
+    else:
+        sql="SELECT "+agg+"("+attr+") FROM "+tname+" WHERE";
+    sql+=condition_args(attr_list,map_schema)+" ;"
+    print(sql)
         # mysqlconnect(sql)
-        try: 
-            db_connection= MySQLdb.connect("localhost","root","","smart_bot") 
-        except: 
-            print("Can't connect to database") 
-            return 0
-        print("Connected")  
-        cursor=db_connection.cursor() 
-        try:
-            cursor.execute(sql) 
-            m = cursor.fetchall() 
-            print('---------------------')
-            for row in m:
-                result+=str(row)+"<br>" 
-        except:
-            result = 'Try Again'
+         
+    try: 
+        db_connection= MySQLdb.connect("localhost","root","","smart_bot") 
+    except: 
+        print("Can't connect to database") 
+        return 0
+    print("Connected")  
+    cursor=db_connection.cursor() 
+    try:
+        cursor.execute(sql) 
+        m = cursor.fetchall() 
+        print('---------------------')
+        for row in m:
+            result+=str(row)+"<br>" 
+    except:
+        result = 'Try Again'
 
-        db_connection.close() 
-
+        db_connection.close()
 
     return HttpResponse('<span> ' + sql +'<br>'+result+ ' </span>')
 
