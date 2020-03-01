@@ -26,7 +26,8 @@
         </div>
         <div class="message-box">
             <input type="text" class="message-input" value="" placeholder="Type message..."> 
-            <i class="fa fa-microphone" id="record" style="font-size:20px;color:rgb(219, 205, 205)"> </i>   
+            <i class="fa fa-file" id="trans" style="font-size:15px;color:white"></i> 
+            <i class="fa fa-microphone" id="record" style="font-size:15px;color:white"> </i>   
             <button type="submit" class="message-submit">Send</button> 
         </div>
 
@@ -53,7 +54,22 @@
                     }                   
                 )
             })
-
+            
+            $('#trans').click(function() {
+                alert('Translating from Hindi to English')
+                $.ajax(
+                    {
+                        type: "GET",
+                        url: "/trans",
+                        data: {
+                            't' : 'translate'
+                        },
+                        success: function(data) {
+                            $('.message-input').val(data);                       
+                        }
+                    }                   
+                )
+            })
 
             $('.message-submit').click(function() {
                 var id = $('.message-input').val();
