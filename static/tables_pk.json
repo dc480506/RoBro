@@ -1,0 +1,1 @@
+{"company": ["company_id"], "company_product": ["company_id", "product_id"], "customer": ["customer_id"], "customer_product": ["customer_id", "product_id"], "product": ["product_id"]}
