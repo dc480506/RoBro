@@ -16,7 +16,7 @@
     <body>
         <div class="chat">
         <div class="chat-title">
-            <h1>Smart_bot</h1>
+            <h1>RoBro - Smart Bot</h1>
             <h2>online</h2>
             <figure class="avatar">
             <img src="{% static 'image.jpg'%}" /></figure>
@@ -56,13 +56,14 @@
             })
             
             $('#trans').click(function() {
+                var id = $('.message-input').val();
                 alert('Translating from Hindi to English')
                 $.ajax(
                     {
                         type: "GET",
                         url: "/trans",
                         data: {
-                            't' : 'translate'
+                            't' : id
                         },
                         success: function(data) {
                             $('.message-input').val(data);                       
@@ -115,7 +116,7 @@
             })
 
             var Fake = [
-                'Hi there, I\'m Smart_Bot and you?',
+                'Hi there, I\'m RoBro - your assistant to retrieve data',
                 'Nice to meet you, ',
                 ]
 
