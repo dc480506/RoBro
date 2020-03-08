@@ -7,6 +7,15 @@ import MySQLdb
 from nltk.stem import WordNetLemmatizer 
 # Create your views here.
 
+from selenium import webdriver
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
+import time
+from selenium.webdriver.common.keys import Keys
+
+
+
 def home(request):
     return render(request, 'home.html', {'data': 'Naveen'})
 
@@ -202,7 +211,7 @@ def get_sql(request):
         sql="SELECT * FROM "+tname+" WHERE"
     else:
         sql="SELECT "+agg+"("+attr+") FROM "+tname+" WHERE";
-    sql+=condition_args(attr_list,map_schema)+" ;"
+    sql += condition_args(attr_list,map_schema)+" ;"
     print(sql)
         # mysqlconnect(sql)
          
@@ -241,7 +250,31 @@ def record(request):
     return HttpResponse(text)
 
 def trans(request):
-    tr = request.GET['t']
-    if tr == 'translate':
-        pass 
-    return HttpResponse('<span> pppp </span>')
+    if request.method == 'GET': 
+        tr = request.GET['t']     
+        chrome_options=webdriver.ChromeOptions()
+        chrome_options.add_argument("--window-size=1920,1080")
+        chrome_options.add_argument("--disable-extensions")
+        chrome_options.add_argument("--proxy-server='direct://'")
+        chrome_options.add_argument("--proxy-bypass-list=*")
+        chrome_options.add_argument("--start-maximized")
+        chrome_options.add_argument('--headless')
+        chrome_options.add_argument('--disable-gpu')
+        chrome_options.add_argument('--disable-dev-shm-usage')
+        chrome_options.add_argument('--no-sandbox')
+        chrome_options.add_argument('--ignore-certificate-errors')
+        browser=webdriver.Chrome(executable_path=r"C:\Users\Admin\projects\hackit\chromedriver.exe",options=chrome_options)
+        browser.get("https://www.google.com/")
+        WebDriverWait(browser,20).until(EC.presence_of_element_located((By.CSS_SELECTOR,".gLFyf.gsfi")))
+        links=browser.find_element_by_name("q")
+        links.send_keys("translate "+tr+" to english")
+        # print(len(links))
+        links.send_keys(Keys.ENTER)
+        WebDriverWait(browser,20).until(EC.presence_of_element_located((By.CSS_SELECTOR,".tw-data-text.tw-text-large.tw-ta")))
+        text=browser.find_elements_by_css_selector('.tw-data-text.tw-text-large.tw-ta')[1]
+        b=text.get_attribute('innerText')
+        # browser.find_element_by_xpath('//*[@id="tw-cpy-btn"]/span/svg/path').click()
+
+        # text_conv=browser.find_element_by_css_selector('.tlid-translation.translation').text
+        print(b)
+    return HttpResponse(b)
